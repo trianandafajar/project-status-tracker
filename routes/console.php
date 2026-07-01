@@ -11,4 +11,4 @@ use Illuminate\Support\Facades\Schedule;
 // Schedule::command(CheckServices::class)->everyThirtySeconds();
 // Schedule::job(new CheckWebsitesJob)->everyFiveMinutes()->withoutOverlapping();
 Schedule::job(new CheckStatusMonitorsJob)->everyFiveMinutes()->withoutOverlapping();
-Schedule::job(new PruneStatusChecksJob)->everyThreeHours();
+Schedule::job(new PruneStatusChecksJob)->daily();

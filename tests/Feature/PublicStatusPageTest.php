@@ -177,7 +177,52 @@ class PublicStatusPageTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $sparkBars->where('status', 'operational')->count());
 
         $this->getJson('/api/status/snapshot')->assertOk()->assertJsonPath('summary.operational', 1);
-
+        $this->assertSame(100.0, (float) $response->json('groups.0.monitors.0.last_uptime_percent'));
         $this->assertSame($before, StatusCheck::count());
+    }
+
+    public function test_unknown_bars_after_first_real_check_reduce_uptime(): void
+    {
+        $monitor = StatusMonitor::create([
+            'name' => 'Portfolio API',
+            'group_name' => 'Portfolio',
+            'type' => 'api',
+            'url' => 'https://portfolio.example.com/api/health',
+            'method' => 'GET',
+            'expected_keyword' => 'ok',
+            'timeout_seconds' => 5,
+            'enabled' => true,
+            'last_status' => 'operational',
+            'last_http_code' => 200,
+            'last_response_ms' => 110,
+            'last_checked_at' => now(),
+            'last_uptime_percent' => 100,
+        ]);
+
+        StatusCheck::create([
+            'status_monitor_id' => $monitor->id,
+            'status' => 'operational',
+            'http_status_code' => 200,
+            'response_time_ms' => 110,
+            'error_message' => null,
+            'checked_at' => now()->subMinutes(20),
+        ]);
+
+        StatusCheck::create([
+            'status_monitor_id' => $monitor->id,
+            'status' => 'operational',
+            'http_status_code' => 200,
+            'response_time_ms' => 110,
+            'error_message' => null,
+            'checked_at' => now(),
+        ]);
+
+        $response = $this->getJson('/api/status/snapshot')->assertOk();
+
+        $sparkBars = collect($response->json('groups.0.monitors.0.spark_bars'));
+
+        $this->assertSame(120, $sparkBars->count());
+        $this->assertGreaterThan(0, $sparkBars->where('status', 'unknown')->count());
+        $this->assertLessThan(100, (float) $response->json('groups.0.monitors.0.last_uptime_percent'));
     }
 }

@@ -45,22 +45,21 @@
                 </section>
 
                 <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div class="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                         <div class="flex items-center gap-3">
                             <h2 class="text-[15px] font-semibold text-slate-950">System status</h2>
-                            {{-- <span class="text-sm text-slate-400" x-text="snapshot?.window_label || ''"></span> --}}
                         </div>
-                         <button type="button" @click="openModal" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900">Add target</button>
+                        <button type="button" @click="openModal" class="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 sm:w-auto">Add target</button>
                     </div>
 
                     <div class="divide-y divide-slate-200">
                         <template x-for="group in (snapshot?.groups || [])" :key="group.name">
-                            <div class="status-group px-5 py-4" :class="isExpanded(group.name) ? 'status-group-expanded' : 'status-group-collapsed'">
+                            <div class="status-group px-4 py-4 sm:px-5" :class="isExpanded(group.name) ? 'status-group-expanded' : 'status-group-collapsed'">
                                 <button
                                     type="button"
                                     @click="toggleGroup(group.name)"
                                     :aria-expanded="isExpanded(group.name)"
-                                    class="flex w-full items-center justify-between gap-4 text-left"
+                                    class="flex w-full flex-col gap-3 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-4"
                                 >
                                     <div class="flex min-w-0 items-center gap-3">
                                         <span class="status-icon" :class="group.status === 'operational' ? 'status-icon-ok' : group.status === 'degraded' ? 'status-icon-warn-solid' : group.status === 'down' ? 'status-icon-down' : 'status-icon-unknown'">
@@ -75,7 +74,7 @@
                                             <span x-show="statusSymbol(group.status) === 'dot'" class="h-2 w-2 rounded-full bg-current"></span>
                                         </span>
 
-                                        <div class="flex min-w-0 items-center gap-2">
+                                        <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                                             <h3 class="truncate text-[15px] font-medium text-slate-950" x-text="group.name"></h3>
                                             <span class="status-info"
                                                 @mouseenter="showUrlTooltip($event, group)"
@@ -88,24 +87,26 @@
                                         </div>
                                     </div>
 
-                                    <div class="shrink-0 text-sm font-medium text-slate-400" x-text="formatUptime(group.uptime_percent)"></div>
+                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatUptime(group.uptime_percent)"></div>
                                 </button>
 
-                                <div class="mt-3 status-sparkline" :style="sparklineStyle(group.spark_bars)">
-                                    <template x-for="(bar, index) in group.spark_bars" :key="index">
-                                        <div class="status-sparkline-bar"
-                                            :class="sparkClass(bar.status)"
-                                            @mouseenter="showSparkTooltip($event, group.name, bar)"
-                                            @mousemove="moveTooltip($event)"
-                                            @mouseleave="hideTooltip()"></div>
-                                    </template>
+                                <div class="mt-3 overflow-hidden">
+                                    <div class="status-sparkline" :style="sparklineStyle(group.spark_bars)">
+                                        <template x-for="(bar, index) in group.spark_bars" :key="index">
+                                            <div class="status-sparkline-bar"
+                                                :class="sparkClass(bar.status)"
+                                                @mouseenter="showSparkTooltip($event, group.name, bar)"
+                                                @mousemove="moveTooltip($event)"
+                                                @mouseleave="hideTooltip()"></div>
+                                        </template>
+                                    </div>
                                 </div>
 
                                 <div x-show="isExpanded(group.name)" class="status-group-details mt-4 border-t border-slate-200 pt-4">
-                                    <div class="space-y-4 pl-4">
+                                    <div class="space-y-4 pl-3 sm:pl-4">
                                         <template x-for="monitor in group.monitors" :key="monitor.id">
                                             <div class="status-component">
-                                                <div class="flex items-center justify-between gap-4">
+                                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                                                     <div class="flex min-w-0 items-center gap-3">
                                                         <span class="status-icon" :class="monitor.last_status === 'operational' ? 'status-icon-ok' : monitor.last_status === 'degraded' ? 'status-icon-warn-solid' : monitor.last_status === 'down' ? 'status-icon-down' : 'status-icon-unknown'">
                                                             <svg x-show="statusSymbol(monitor.last_status) === 'check'" viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -119,7 +120,7 @@
                                                             <span x-show="statusSymbol(monitor.last_status) === 'dot'" class="h-2 w-2 rounded-full bg-current"></span>
                                                         </span>
                                                         <div class="min-w-0">
-                                                            <div class="flex items-center gap-2">
+                                                            <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                                                                 <p class="truncate text-[14px] font-medium text-slate-950" x-text="monitor.name"></p>
                                                                 <span class="status-info"
                                                                     @mouseenter="showTooltip($event, monitor.name, [monitor.url])"
@@ -129,17 +130,19 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="shrink-0 text-sm font-medium text-slate-400" x-text="formatUptime(monitor.last_uptime_percent)"></div>
+                                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatUptime(monitor.last_uptime_percent)"></div>
                                                 </div>
 
-                                                <div class="mt-2 status-sparkline" :style="sparklineStyle(monitor.spark_bars)">
-                                                    <template x-for="(bar, index) in monitor.spark_bars" :key="index">
-                                                        <div class="status-sparkline-bar"
-                                                            :class="sparkClass(bar.status)"
-                                                            @mouseenter="showSparkTooltip($event, monitor.name, bar)"
-                                                            @mousemove="moveTooltip($event)"
-                                                            @mouseleave="hideTooltip()"></div>
-                                                    </template>
+                                                <div class="mt-2 overflow-hidden">
+                                                    <div class="status-sparkline" :style="sparklineStyle(monitor.spark_bars)">
+                                                        <template x-for="(bar, index) in monitor.spark_bars" :key="index">
+                                                            <div class="status-sparkline-bar"
+                                                                :class="sparkClass(bar.status)"
+                                                                @mouseenter="showSparkTooltip($event, monitor.name, bar)"
+                                                                @mousemove="moveTooltip($event)"
+                                                                @mouseleave="hideTooltip()"></div>
+                                                        </template>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </template>

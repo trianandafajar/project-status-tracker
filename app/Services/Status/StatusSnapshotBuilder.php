@@ -74,6 +74,8 @@ class StatusSnapshotBuilder
         $monitorPayload = $monitors->map(function (StatusMonitor $monitor) use ($checksByMonitor, $displaySince) {
             $checks = $checksByMonitor->get($monitor->id, collect());
             $normalizedType = $monitor->type === 'database' ? 'api' : $monitor->type;
+            $sparkBars = $this->buildSparkBars($checks, $displaySince);
+            $displayUptimePercent = $this->calculateUptimeFromBars($sparkBars);
 
             return [
                 'id' => $monitor->id,
@@ -85,9 +87,9 @@ class StatusSnapshotBuilder
                 'last_http_code' => $monitor->last_http_code,
                 'last_response_ms' => $monitor->last_response_ms,
                 'last_checked_at' => $monitor->last_checked_at?->toIso8601String(),
-                'last_uptime_percent' => $monitor->last_uptime_percent !== null ? (float) $monitor->last_uptime_percent : null,
+                'last_uptime_percent' => $displayUptimePercent,
                 'last_error_message' => $monitor->last_error_message,
-                'spark_bars' => $this->buildSparkBars($checks, $displaySince),
+                'spark_bars' => $sparkBars,
             ];
         });
 
@@ -212,6 +214,27 @@ class StatusSnapshotBuilder
         }
 
         return $bars;
+    }
+
+    private function calculateUptimeFromBars(array $bars): ?float
+    {
+        if ($bars === []) {
+            return null;
+        }
+
+        $firstRealIndex = collect($bars)
+            ->search(fn (array $bar) => ($bar['status'] ?? 'unknown') !== 'unknown');
+
+        if ($firstRealIndex === false) {
+            return null;
+        }
+
+        $trackedBars = array_slice($bars, $firstRealIndex);
+        $operationalBars = collect($trackedBars)
+            ->where('status', 'operational')
+            ->count();
+
+        return round(($operationalBars / count($trackedBars)) * 100, 2);
     }
 
     private function aggregateStatus(array $statuses): string
