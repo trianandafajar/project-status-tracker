@@ -13,7 +13,7 @@ class PruneStatusChecksJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public const RETENTION_HOURS = 6;
+    public const RETENTION_HOURS = 24;
 
     public function handle(): void
     {

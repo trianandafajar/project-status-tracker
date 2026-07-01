@@ -93,7 +93,7 @@ class PublicStatusPageTest extends TestCase
         $this->assertArrayHasKey('expected_keyword', $errors);
     }
 
-    public function test_old_checks_are_pruned_after_six_hours(): void
+    public function test_old_checks_are_pruned_after_one_day(): void
     {
         $monitor = StatusMonitor::create([
             'name' => 'Portfolio DB',
@@ -112,7 +112,7 @@ class PublicStatusPageTest extends TestCase
             'http_status_code' => 502,
             'response_time_ms' => 910,
             'error_message' => 'HTTP 502 Bad Gateway',
-            'checked_at' => now()->subHours(7),
+            'checked_at' => now()->subHours(25),
         ]);
 
         StatusCheck::create([
@@ -121,7 +121,7 @@ class PublicStatusPageTest extends TestCase
             'http_status_code' => 200,
             'response_time_ms' => 120,
             'error_message' => null,
-            'checked_at' => now()->subMinutes(10),
+            'checked_at' => now()->subHours(23),
         ]);
 
         (new PruneStatusChecksJob())->handle();
