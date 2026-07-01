@@ -12,6 +12,11 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WebsiteController;
+use App\Http\Controllers\StatusPageController;
+
+Route::get('/status/snapshot', [StatusPageController::class, 'snapshot']);
+Route::post('/status/targets', [StatusPageController::class, 'store'])->middleware('throttle:12,1');
+Route::post('/status/targets/{statusMonitor}/refresh', [StatusPageController::class, 'refresh'])->middleware('throttle:30,1');
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 

@@ -1,1 +1,122 @@
 @import "tailwindcss";
+
+.status-shell {
+    background: #fafafa;
+    font-family: "Segoe UI Variable Text", "Aptos", "Trebuchet MS", sans-serif;
+}
+
+.status-banner {
+    border: 1px solid #d6f5ea;
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
+.status-banner-ok {
+    background: #e9fbf3;
+    color: #065f46;
+}
+
+.status-banner-warn {
+    background: #fff7e8;
+    border-color: #fde7ba;
+    color: #92400e;
+}
+
+.status-banner-down {
+    background: #fff1f2;
+    border-color: #fecdd3;
+    color: #9f1239;
+}
+
+.status-banner-unknown {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+.status-icon {
+    display: inline-flex;
+    height: 18px;
+    width: 18px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
+.status-icon-ok {
+    background: #10b981;
+    color: white;
+}
+
+.status-icon-warn-solid {
+    color: #f59e0b;
+}
+
+.status-icon-down {
+    color: #fb7185;
+}
+
+.status-icon-unknown {
+    color: #94a3b8;
+}
+
+.status-info {
+    display: inline-flex;
+    height: 14px;
+    width: 14px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    border: 1px solid #cbd5e1;
+    color: #94a3b8;
+    font-size: 10px;
+    line-height: 1;
+    cursor: default;
+    flex-shrink: 0;
+}
+
+.status-sparkline {
+    display: grid;
+    gap: 3px;
+}
+
+.status-sparkline-wide {
+    grid-template-columns: repeat(60, minmax(0, 1fr));
+}
+
+.status-sparkline-bar {
+    height: 20px;
+    border-radius: 2px;
+}
+
+.status-component + .status-component {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+}
+
+.status-tooltip {
+    position: fixed;
+    z-index: 70;
+    max-width: 260px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.96);
+    padding: 10px 12px;
+    color: white;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
+    pointer-events: none;
+}
+
+.status-tooltip-title {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.status-tooltip-line {
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.82);
+    word-break: break-word;
+}
