@@ -3,6 +3,7 @@ import Alpine from 'alpinejs';
 import axios from 'axios';
 import Echo from 'laravel-echo';
 import Chart from 'chart.js/auto';
+import './status-page';
 
 window.Alpine = Alpine;
 window.axios = axios;
