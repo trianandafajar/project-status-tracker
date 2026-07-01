@@ -9,8 +9,9 @@ use Illuminate\Support\Collection;
 
 class StatusSnapshotBuilder
 {
-    private const DISPLAY_WINDOW_MINUTES = 120;
-    private const BAR_COUNT = self::DISPLAY_WINDOW_MINUTES;
+    private const DISPLAY_WINDOW_MINUTES = 120 * 5;
+    private const BAR_MINUTES = 5;
+    private const BAR_COUNT = self::DISPLAY_WINDOW_MINUTES / self::BAR_MINUTES;
 
     public function build(): array
     {
@@ -39,7 +40,7 @@ class StatusSnapshotBuilder
         if ($monitors->isEmpty()) {
             return [
                 'generated_at' => $now->toIso8601String(),
-                'poll_interval_seconds' => 60,
+                'poll_interval_seconds' => 300,
                 'display_window_minutes' => self::DISPLAY_WINDOW_MINUTES,
                 'overall_status' => 'unknown',
                 'overall_message' => 'No monitors have been added yet.',
@@ -125,7 +126,7 @@ class StatusSnapshotBuilder
 
         return [
             'generated_at' => $now->toIso8601String(),
-            'poll_interval_seconds' => 60,
+            'poll_interval_seconds' => 300,
             'display_window_minutes' => self::DISPLAY_WINDOW_MINUTES,
             'overall_status' => $overallStatus,
             'overall_message' => $this->overallMessage($overallStatus, $summary['total']),
@@ -143,7 +144,7 @@ class StatusSnapshotBuilder
         $bucketMeta = [];
 
         for ($i = 0; $i < self::BAR_COUNT; $i++) {
-            $start = $since->addMinutes($i);
+            $start = $since->addMinutes($i * self::BAR_MINUTES);
 
             $bars[$i] = [
                 'status' => 'unknown',
@@ -161,7 +162,7 @@ class StatusSnapshotBuilder
             }
 
             $checkedAt = CarbonImmutable::parse($check->checked_at);
-            $index = (int) floor($since->diffInSeconds($checkedAt, false) / 60);
+            $index = (int) floor($since->diffInSeconds($checkedAt, false) / (self::BAR_MINUTES * 60));
 
             if ($index < 0 || $index >= self::BAR_COUNT) {
                 continue;

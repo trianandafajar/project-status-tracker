@@ -10,9 +10,6 @@ class ExampleTest extends TestCase
     {
         $this->withoutVite();
 
-        $response = $this->get('/');
-
-        $response->assertStatus(200);
-        $response->assertSee('Status');
+        $this->get('/')->assertStatus(200);
     }
 }

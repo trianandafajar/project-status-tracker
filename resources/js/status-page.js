@@ -34,7 +34,7 @@ document.addEventListener('alpine:init', () => {
 
         init() {
             this.fetchSnapshot();
-            this.poller = window.setInterval(() => this.fetchSnapshot(false), 60000);
+            this.poller = window.setInterval(() => this.fetchSnapshot(false), 2 * 60 * 1000);
         },
 
         async fetchSnapshot(showLoading = true) {
