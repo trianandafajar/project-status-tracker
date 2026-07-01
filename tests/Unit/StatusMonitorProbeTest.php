@@ -11,7 +11,6 @@ class StatusMonitorProbeTest extends TestCase
     public function test_classifier_marks_200_as_operational(): void
     {
         $monitor = new StatusMonitor([
-            'expected_status_code' => 200,
             'method' => 'GET',
         ]);
 
@@ -24,7 +23,6 @@ class StatusMonitorProbeTest extends TestCase
     public function test_classifier_marks_502_as_down(): void
     {
         $monitor = new StatusMonitor([
-            'expected_status_code' => 200,
             'method' => 'HEAD',
         ]);
 
@@ -37,7 +35,6 @@ class StatusMonitorProbeTest extends TestCase
     public function test_classifier_marks_timeout_as_down(): void
     {
         $monitor = new StatusMonitor([
-            'expected_status_code' => 200,
             'method' => 'HEAD',
         ]);
 
@@ -50,7 +47,6 @@ class StatusMonitorProbeTest extends TestCase
     public function test_classifier_marks_body_mismatch_as_degraded(): void
     {
         $monitor = new StatusMonitor([
-            'expected_status_code' => 200,
             'expected_keyword' => 'healthy',
             'method' => 'GET',
         ]);
@@ -59,5 +55,29 @@ class StatusMonitorProbeTest extends TestCase
 
         $this->assertSame('degraded', $result['status']);
         $this->assertSame("Expected keyword 'healthy' not found", $result['error_message']);
+    }
+
+    public function test_classifier_marks_database_false_as_degraded_even_when_http_200(): void
+    {
+        $monitor = new StatusMonitor([
+            'method' => 'GET',
+        ]);
+
+        $result = (new StatusMonitorProbe())->classify($monitor, 200, '{"status":"ok","api":true,"database":false}');
+
+        $this->assertSame('degraded', $result['status']);
+        $this->assertSame('Database health reports not ok', $result['error_message']);
+    }
+
+    public function test_classifier_accepts_optional_database_and_api_fields_when_missing(): void
+    {
+        $monitor = new StatusMonitor([
+            'method' => 'GET',
+        ]);
+
+        $result = (new StatusMonitorProbe())->classify($monitor, 200, '{"status":"ok"}');
+
+        $this->assertSame('operational', $result['status']);
+        $this->assertNull($result['error_message']);
     }
 }

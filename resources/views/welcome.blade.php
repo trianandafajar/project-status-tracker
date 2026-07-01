@@ -11,14 +11,6 @@
 <body class="bg-[#fafafa] text-slate-900 antialiased">
     <div class="status-shell min-h-screen" x-data="statusPage()">
         <main class="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-            <section class="mb-6 flex items-center justify-between gap-4">
-                <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Status.domainmu</p>
-                    <h1 class="mt-2 text-[18px] font-semibold text-slate-950">System status</h1>
-                </div>
-                <button type="button" @click="openModal" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900">Add target</button>
-            </section>
-
             <template x-if="error">
                 <section class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700" x-text="error"></section>
             </template>
@@ -28,7 +20,7 @@
             </template>
 
             <template x-if="!loading && (snapshot?.groups || []).length === 0">
-                <section class="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-600">Belum ada monitor. Tambahkan target pertama untuk mulai monitoring.</section>
+                <section class="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-600">No monitors yet. Add the first target to start monitoring.</section>
             </template>
 
             <div class="space-y-5" x-cloak>
@@ -56,15 +48,20 @@
                     <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                         <div class="flex items-center gap-3">
                             <h2 class="text-[15px] font-semibold text-slate-950">System status</h2>
-                            <span class="text-sm text-slate-400" x-text="snapshot?.window_label || ''"></span>
+                            {{-- <span class="text-sm text-slate-400" x-text="snapshot?.window_label || ''"></span> --}}
                         </div>
-                        <span class="text-sm text-slate-400">Last <span x-text="snapshot?.display_window_minutes || 60"></span> minutes</span>
+                         <button type="button" @click="openModal" class="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900">Add target</button>
                     </div>
 
                     <div class="divide-y divide-slate-200">
                         <template x-for="group in (snapshot?.groups || [])" :key="group.name">
-                            <div class="px-5 py-4">
-                                <button type="button" @click="toggleGroup(group.name)" class="flex w-full items-center justify-between gap-4 text-left">
+                            <div class="status-group px-5 py-4" :class="isExpanded(group.name) ? 'status-group-expanded' : 'status-group-collapsed'">
+                                <button
+                                    type="button"
+                                    @click="toggleGroup(group.name)"
+                                    :aria-expanded="isExpanded(group.name)"
+                                    class="flex w-full items-center justify-between gap-4 text-left"
+                                >
                                     <div class="flex min-w-0 items-center gap-3">
                                         <span class="status-icon" :class="group.status === 'operational' ? 'status-icon-ok' : group.status === 'degraded' ? 'status-icon-warn-solid' : group.status === 'down' ? 'status-icon-down' : 'status-icon-unknown'">
                                             <svg x-show="statusSymbol(group.status) === 'check'" viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -85,7 +82,7 @@
                                                 @mousemove="moveTooltip($event)"
                                                 @mouseleave="hideTooltip()">i</span>
                                             <span class="text-sm text-slate-500" x-text="componentLabel(group.component_count)"></span>
-                                            <svg viewBox="0 0 16 16" class="h-4 w-4 text-slate-400 transition" :class="isExpanded(group.name) ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <svg viewBox="0 0 16 16" class="h-4 w-4 text-slate-400 transition duration-150" :class="isExpanded(group.name) ? 'rotate-180 text-slate-600' : 'text-slate-400'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                                 <path d="M4 6.5 8 10.5 12 6.5" />
                                             </svg>
                                         </div>
@@ -94,7 +91,7 @@
                                     <div class="shrink-0 text-sm font-medium text-slate-400" x-text="formatUptime(group.uptime_percent)"></div>
                                 </button>
 
-                                <div class="mt-3 status-sparkline status-sparkline-wide">
+                                <div class="mt-3 status-sparkline" :style="sparklineStyle(group.spark_bars)">
                                     <template x-for="(bar, index) in group.spark_bars" :key="index">
                                         <div class="status-sparkline-bar"
                                             :class="sparkClass(bar.status)"
@@ -104,8 +101,8 @@
                                     </template>
                                 </div>
 
-                                <div x-show="isExpanded(group.name)" class="mt-4 border-t border-slate-100 pt-4">
-                                    <div class="space-y-4">
+                                <div x-show="isExpanded(group.name)" class="status-group-details mt-4 border-t border-slate-200 pt-4">
+                                    <div class="space-y-4 pl-4">
                                         <template x-for="monitor in group.monitors" :key="monitor.id">
                                             <div class="status-component">
                                                 <div class="flex items-center justify-between gap-4">
@@ -135,7 +132,7 @@
                                                     <div class="shrink-0 text-sm font-medium text-slate-400" x-text="formatUptime(monitor.last_uptime_percent)"></div>
                                                 </div>
 
-                                                <div class="mt-2 status-sparkline status-sparkline-wide">
+                                                <div class="mt-2 status-sparkline" :style="sparklineStyle(monitor.spark_bars)">
                                                     <template x-for="(bar, index) in monitor.spark_bars" :key="index">
                                                         <div class="status-sparkline-bar"
                                                             :class="sparkClass(bar.status)"
@@ -167,7 +164,7 @@
                 <div class="mb-3 flex items-start justify-between gap-4">
                     <div>
                         <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">New monitor</p>
-                        <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-950">Tambah target baru</h2>
+                        <h2 class="mt-1 text-lg font-semibold tracking-tight text-slate-950">Add new target</h2>
                     </div>
                     <button type="button" @click="closeModal" class="rounded-full border border-slate-200 px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300">Close</button>
                 </div>
@@ -175,11 +172,11 @@
                 <form class="space-y-3" @submit.prevent="saveMonitor">
                     <div class="grid gap-3 sm:grid-cols-2">
                         <label class="block">
-                            <span class="mb-1 block text-sm font-medium text-slate-700">Nama web</span>
+                            <span class="mb-1 block text-sm font-medium text-slate-700">Name</span>
                             <input x-model="form.name" type="text" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950">
                         </label>
                         <label class="block">
-                            <span class="mb-1 block text-sm font-medium text-slate-700">Group web</span>
+                            <span class="mb-1 block text-sm font-medium text-slate-700">Group</span>
                             <input x-model="form.group_name" type="text" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950">
                         </label>
                     </div>
@@ -195,14 +192,13 @@
                             <select x-model="form.type" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950">
                                 <option value="website">Website</option>
                                 <option value="api">API</option>
-                                <option value="database">Database</option>
                             </select>
                         </label>
                         <label class="block">
-                            <span class="mb-1 block text-sm font-medium text-slate-700">Check type</span>
+                            <span class="mb-1 block text-sm font-medium text-slate-700">Check method</span>
                             <select x-model="form.method" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950">
-                                <option value="HEAD">Head only</option>
-                                <option value="GET">Health check</option>
+                                <option value="HEAD">HEAD only</option>
+                                <option value="GET">GET health check</option>
                             </select>
                         </label>
                         <label class="block">
@@ -211,20 +207,15 @@
                         </label>
                     </div>
 
-                    <div class="grid gap-3 sm:grid-cols-2">
-                        <label class="block">
-                            <span class="mb-1 block text-sm font-medium text-slate-700">Expected HTTP</span>
-                            <input x-model="form.expected_status_code" type="number" min="100" max="599" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950">
-                        </label>
-                        <label class="block" x-show="form.method === 'GET'">
-                            <span class="mb-1 block text-sm font-medium text-slate-700">Expected keyword</span>
-                            <input x-model="form.expected_keyword" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950" placeholder="healthy">
-                        </label>
-                    </div>
+                    <label class="block" x-show="form.method === 'GET'">
+                        <span class="mb-1 block text-sm font-medium text-slate-700">Expected keyword</span>
+                        <input x-model="form.expected_keyword" type="text" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950" placeholder="ok">
+                    </label>
 
-                    <label class="block" x-show="form.type === 'api' || form.type === 'database'">
-                        <span class="mb-1 block text-sm font-medium text-slate-700">Body template</span>
-                        <textarea x-model="form.request_body_template" rows="4" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950" placeholder='{"status":"ok","database":"connected"}'></textarea>
+                    <label class="block" x-show="form.type === 'api' && form.method === 'GET'">
+                        <span class="mb-1 block text-sm font-medium text-slate-700">Example health response</span>
+                        <textarea x-model="form.request_body_template" rows="4" class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-slate-950" placeholder='{"status":"ok","api":true,"database":true}'></textarea>
+                        <p class="mt-1 text-xs text-slate-500">Optional. The checker will recognize the JSON fields `status`, `api`, and `database` when the endpoint returns them.</p>
                     </label>
 
                     <div class="flex items-center justify-end gap-2 pt-1">

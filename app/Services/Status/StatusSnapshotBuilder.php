@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 
 class StatusSnapshotBuilder
 {
-    private const DISPLAY_WINDOW_MINUTES = 60;
+    private const DISPLAY_WINDOW_MINUTES = 120;
     private const BAR_COUNT = self::DISPLAY_WINDOW_MINUTES;
 
     public function build(): array
@@ -72,12 +72,13 @@ class StatusSnapshotBuilder
 
         $monitorPayload = $monitors->map(function (StatusMonitor $monitor) use ($checksByMonitor, $displaySince) {
             $checks = $checksByMonitor->get($monitor->id, collect());
+            $normalizedType = $monitor->type === 'database' ? 'api' : $monitor->type;
 
             return [
                 'id' => $monitor->id,
                 'name' => $monitor->name,
                 'group_name' => $monitor->group_name,
-                'type' => $monitor->type,
+                'type' => $normalizedType,
                 'url' => $monitor->url,
                 'last_status' => $monitor->last_status,
                 'last_http_code' => $monitor->last_http_code,

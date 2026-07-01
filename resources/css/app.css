@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@layer base {
+    button {
+        @apply cursor-pointer;
+    }
+}
+
 .status-shell {
     background: #fafafa;
     font-family: "Segoe UI Variable Text", "Aptos", "Trebuchet MS", sans-serif;
@@ -32,6 +38,18 @@
     background: #f8fafc;
     border-color: #e2e8f0;
     color: #475569;
+}
+
+.status-group {
+    transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.status-group-expanded {
+    background: #fcfcfd;
+}
+
+.status-group-details {
+    border-left: 2px solid #e2e8f0;
 }
 
 .status-icon {
@@ -81,11 +99,8 @@
     gap: 3px;
 }
 
-.status-sparkline-wide {
-    grid-template-columns: repeat(60, minmax(0, 1fr));
-}
-
 .status-sparkline-bar {
+    min-width: 0;
     height: 20px;
     border-radius: 2px;
 }

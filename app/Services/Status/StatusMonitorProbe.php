@@ -54,7 +54,6 @@ class StatusMonitorProbe
         string $body = '',
         ?string $transportError = null,
     ): array {
-        $expectedStatus = (int) ($monitor->expected_status_code ?: 200);
         $expectedKeyword = trim((string) ($monitor->expected_keyword ?: ''));
 
         if ($transportError) {
@@ -81,11 +80,29 @@ class StatusMonitorProbe
             ];
         }
 
-        if ($httpStatusCode !== $expectedStatus) {
+        if ($httpStatusCode !== 200) {
             return [
                 'status' => 'degraded',
-                'error_message' => "Expected HTTP {$expectedStatus}, got {$httpStatusCode}",
+                'error_message' => "Expected HTTP 200, got {$httpStatusCode}",
                 'is_up' => false,
+            ];
+        }
+
+        $healthSignals = $this->inspectHealthPayload($body);
+
+        if ($healthSignals !== null) {
+            if ($healthSignals['errors'] !== []) {
+                return [
+                    'status' => 'degraded',
+                    'error_message' => implode('; ', $healthSignals['errors']),
+                    'is_up' => false,
+                ];
+            }
+
+            return [
+                'status' => 'operational',
+                'error_message' => null,
+                'is_up' => true,
             ];
         }
 
@@ -102,6 +119,72 @@ class StatusMonitorProbe
             'error_message' => null,
             'is_up' => true,
         ];
+    }
+
+    private function inspectHealthPayload(string $body): ?array
+    {
+        $trimmed = trim($body);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $payload = json_decode($trimmed, true);
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        $errors = [];
+        $foundAny = false;
+
+        foreach (['status', 'api', 'database'] as $key) {
+            if (! array_key_exists($key, $payload)) {
+                continue;
+            }
+
+            $foundAny = true;
+
+            if (! $this->isHealthyValue($payload[$key], $key)) {
+                $errors[] = match ($key) {
+                    'status' => 'Status health reports not ok',
+                    'api' => 'API health reports not ok',
+                    'database' => 'Database health reports not ok',
+                    default => ucfirst($key).' health reports not ok',
+                };
+            }
+        }
+
+        if (! $foundAny) {
+            return null;
+        }
+
+        return ['errors' => $errors];
+    }
+
+    private function isHealthyValue(mixed $value, string $key): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value === 1;
+        }
+
+        if (! is_string($value)) {
+            return false;
+        }
+
+        $normalized = Str::lower(trim($value));
+
+        $healthy = ['true', '1', 'ok', 'up', 'healthy', 'connected'];
+
+        if ($key === 'status') {
+            $healthy[] = 'operational';
+        }
+
+        return in_array($normalized, $healthy, true);
     }
 
     private function buildResult(

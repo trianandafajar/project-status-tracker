@@ -9,9 +9,8 @@ const emptyForm = () => ({
     type: 'website',
     url: '',
     method: 'HEAD',
-    expected_status_code: 200,
     expected_keyword: '',
-    request_body_template: '',
+    request_body_template: '{"status":"ok","api":true,"database":true}',
     timeout_seconds: 10,
 });
 
@@ -56,18 +55,26 @@ document.addEventListener('alpine:init', () => {
             const next = {};
 
             groups.forEach((group) => {
-                next[group.name] = this.expandedGroups[group.name] ?? true;
+                next[group.name] = this.expandedGroups[group.name] ?? false;
             });
 
             this.expandedGroups = next;
         },
 
         toggleGroup(name) {
-            this.expandedGroups[name] = !this.expandedGroups[name];
+            this.expandedGroups[name] = !this.isExpanded(name);
         },
 
         isExpanded(name) {
-            return this.expandedGroups[name] ?? true;
+            return this.expandedGroups[name] ?? false;
+        },
+
+        sparklineStyle(bars) {
+            const count = Array.isArray(bars) && bars.length > 0
+                ? bars.length
+                : (this.snapshot?.display_window_minutes || 60);
+
+            return `grid-template-columns: repeat(${count}, minmax(0, 1fr));`;
         },
 
         openModal() {

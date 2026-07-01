@@ -25,7 +25,7 @@ class PublicStatusPageTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('Status.domainmu');
+        $response->assertSee('Status');
         $response->assertSee('Add target');
     }
 
@@ -41,7 +41,6 @@ class PublicStatusPageTest extends TestCase
             'type' => 'website',
             'url' => 'https://portfolio.example.com/health',
             'method' => 'HEAD',
-            'expected_status_code' => 200,
             'timeout_seconds' => 5,
         ]);
 
@@ -52,6 +51,7 @@ class PublicStatusPageTest extends TestCase
             'group_name' => 'Portfolio',
             'type' => 'website',
             'method' => 'HEAD',
+            'expected_status_code' => 200,
         ]);
 
         $this->assertDatabaseHas('status_checks', [
@@ -65,7 +65,7 @@ class PublicStatusPageTest extends TestCase
         $response = $this->postJson('/api/status/targets', [
             'name' => '',
             'group_name' => 'Portfolio',
-            'type' => 'website',
+            'type' => 'database',
             'url' => 'not-a-url',
             'method' => 'HEAD',
         ]);
@@ -76,6 +76,7 @@ class PublicStatusPageTest extends TestCase
 
         $this->assertArrayHasKey('name', $errors);
         $this->assertArrayHasKey('url', $errors);
+        $this->assertArrayHasKey('type', $errors);
     }
 
     public function test_head_check_rejects_keyword_validation(): void
@@ -101,7 +102,7 @@ class PublicStatusPageTest extends TestCase
         $monitor = StatusMonitor::create([
             'name' => 'Portfolio DB',
             'group_name' => 'Portfolio',
-            'type' => 'database',
+            'type' => 'api',
             'url' => 'https://portfolio.example.com/db-health',
             'method' => 'GET',
             'expected_status_code' => 200,
@@ -145,7 +146,6 @@ class PublicStatusPageTest extends TestCase
             'type' => 'api',
             'url' => 'https://portfolio.example.com/api/health',
             'method' => 'GET',
-            'expected_status_code' => 200,
             'expected_keyword' => 'ok',
             'timeout_seconds' => 5,
             'enabled' => true,
