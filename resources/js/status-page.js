@@ -29,6 +29,7 @@ document.addEventListener('alpine:init', () => {
             x: 0,
             y: 0,
         },
+        tooltipHideTimer: null,
         form: emptyForm(),
         poller: null,
 
@@ -172,6 +173,11 @@ document.addEventListener('alpine:init', () => {
         },
 
         showTooltip(event, title, lines) {
+            if (this.tooltipHideTimer) {
+                window.clearTimeout(this.tooltipHideTimer);
+                this.tooltipHideTimer = null;
+            }
+
             this.tooltip.title = title;
             this.tooltip.lines = lines.filter(Boolean);
             this.tooltip.visible = true;
@@ -179,12 +185,49 @@ document.addEventListener('alpine:init', () => {
         },
 
         moveTooltip(event) {
-            this.tooltip.x = event.clientX + 14;
-            this.tooltip.y = event.clientY + 14;
+            window.requestAnimationFrame(() => {
+                this.positionTooltip(event.clientX, event.clientY);
+            });
+        },
+
+        positionTooltip(clientX, clientY) {
+            const offset = 14;
+            const viewportPadding = 12;
+            const tooltipElement = document.querySelector('.status-tooltip');
+            const tooltipRect = tooltipElement?.getBoundingClientRect();
+            const tooltipWidth = tooltipRect?.width ?? 260;
+            const tooltipHeight = tooltipRect?.height ?? 72;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let x = clientX + offset;
+            let y = clientY + offset;
+
+            if (x + tooltipWidth + viewportPadding > viewportWidth) {
+                x = Math.max(viewportPadding, viewportWidth - tooltipWidth - viewportPadding);
+            }
+
+            if (y + tooltipHeight + viewportPadding > viewportHeight) {
+                y = clientY - tooltipHeight - offset;
+            }
+
+            if (y < viewportPadding) {
+                y = viewportPadding;
+            }
+
+            this.tooltip.x = x;
+            this.tooltip.y = y;
         },
 
         hideTooltip() {
-            this.tooltip.visible = false;
+            if (this.tooltipHideTimer) {
+                window.clearTimeout(this.tooltipHideTimer);
+            }
+
+            this.tooltipHideTimer = window.setTimeout(() => {
+                this.tooltip.visible = false;
+                this.tooltipHideTimer = null;
+            }, 70);
         },
     }));
 });

@@ -120,6 +120,24 @@
     color: white;
     box-shadow: 0 16px 40px rgba(15, 23, 42, 0.2);
     pointer-events: none;
+    will-change: transform, opacity, left, top;
+}
+
+.status-tooltip-enter,
+.status-tooltip-leave {
+    transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.status-tooltip-enter-start,
+.status-tooltip-leave-end {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+}
+
+.status-tooltip-enter-end,
+.status-tooltip-leave-start {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .status-tooltip-title {

@@ -155,7 +155,7 @@
             </div>
         </main>
 
-        <div x-show="tooltip.visible" x-cloak class="status-tooltip" :style="`left:${tooltip.x}px; top:${tooltip.y}px;`">
+        <div x-show="tooltip.visible" x-cloak x-transition:enter="status-tooltip-enter" x-transition:enter-start="status-tooltip-enter-start" x-transition:enter-end="status-tooltip-enter-end" x-transition:leave="status-tooltip-leave" x-transition:leave-start="status-tooltip-leave-start" x-transition:leave-end="status-tooltip-leave-end" class="status-tooltip" :style="`left:${tooltip.x}px; top:${tooltip.y}px;`">
             <p class="status-tooltip-title" x-text="tooltip.title"></p>
             <template x-for="(line, index) in tooltip.lines" :key="`${tooltip.title}-${index}`">
                 <p class="status-tooltip-line" x-text="line"></p>
