@@ -154,8 +154,66 @@ document.addEventListener('alpine:init', () => {
             return `${Number(value).toFixed(2)}% uptime`;
         },
 
+        formatWindowUptime(value) {
+            if (value === null || value === undefined) return '--';
+
+            const windowLabel = this.windowLabel();
+
+            return windowLabel
+                ? `${windowLabel} | ${this.formatUptime(value)}`
+                : this.formatUptime(value);
+        },
+
+        windowLabel() {
+            const generatedAt = this.snapshot?.generated_at;
+            const displayWindowMinutes = Number(this.snapshot?.display_window_minutes || 0);
+
+            if (!generatedAt || !displayWindowMinutes) {
+                return this.snapshot?.window_label || '';
+            }
+
+            const end = new Date(generatedAt);
+
+            if (Number.isNaN(end.getTime())) {
+                return this.snapshot?.window_label || '';
+            }
+
+            const start = new Date(end.getTime() - (displayWindowMinutes * 60 * 1000));
+            const formatter = new Intl.DateTimeFormat(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+
+            return `${formatter.format(start)} - ${formatter.format(end)}`;
+        },
+
         componentLabel(count) {
             return `${count} component${count === 1 ? '' : 's'}`;
+        },
+
+        formatTooltipTimestamp(isoValue, fallback = '') {
+            if (!isoValue) {
+                return fallback;
+            }
+
+            const date = new Date(isoValue);
+
+            if (Number.isNaN(date.getTime())) {
+                return fallback;
+            }
+
+            const formatter = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Asia/Jakarta',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+            });
+
+            return `${formatter.format(date)} WIB`;
         },
 
         showUrlTooltip(event, group) {
@@ -164,7 +222,8 @@ document.addEventListener('alpine:init', () => {
 
         showSparkTooltip(event, label, bar) {
             const lines = [this.statusLabel(bar.status)];
-            if (bar.label) lines.push(bar.label);
+            const timestampLabel = this.formatTooltipTimestamp(bar.checked_at, bar.label);
+            if (timestampLabel) lines.push(timestampLabel);
             if (bar.http_status_code) lines.push(`HTTP ${bar.http_status_code}`);
             if (bar.response_time_ms) lines.push(`${bar.response_time_ms} ms`);
             if (bar.error_message) lines.push(bar.error_message);

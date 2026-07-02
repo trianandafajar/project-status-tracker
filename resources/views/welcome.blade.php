@@ -87,7 +87,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatUptime(group.uptime_percent)"></div>
+                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatWindowUptime(group.uptime_percent)"></div>
                                 </button>
 
                                 <div class="mt-3 overflow-hidden">
@@ -102,8 +102,8 @@
                                     </div>
                                 </div>
 
-                                <div x-show="isExpanded(group.name)" class="status-group-details mt-4 border-t border-slate-200 pt-4">
-                                    <div class="space-y-4 pl-3 sm:pl-4">
+                                <div x-show="isExpanded(group.name)" class="status-group-details mt-4">
+                                    <div class="space-y-4">
                                         <template x-for="monitor in group.monitors" :key="monitor.id">
                                             <div class="status-component">
                                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -130,7 +130,7 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatUptime(monitor.last_uptime_percent)"></div>
+                                                    <div class="w-full text-sm font-medium text-slate-400 sm:w-auto sm:shrink-0 sm:text-right" x-text="formatWindowUptime(monitor.last_uptime_percent)"></div>
                                                 </div>
 
                                                 <div class="mt-2 overflow-hidden">

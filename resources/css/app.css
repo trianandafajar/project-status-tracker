@@ -49,7 +49,10 @@
 }
 
 .status-group-details {
-    border-left: 2px solid #e2e8f0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 14px 14px 12px;
 }
 
 .status-icon {
@@ -160,7 +163,7 @@
     }
 
     .status-group-details {
-        border-left-width: 1px;
+        padding: 12px;
     }
 
     .status-sparkline {
